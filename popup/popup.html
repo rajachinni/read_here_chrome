@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Read Here</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>Read Here</h1>
+      </div>
+      <p class="subtitle">Configure your reading destinations</p>
+    </header>
+
+    <main>
+      <div class="tabs">
+        <button class="tab active" data-tab="quick">Quick Read</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </div>
+
+      <!-- Quick Read Tab -->
+      <div class="tab-content active" id="quick-tab">
+        <!-- Current site status -->
+        <div id="site-status" class="site-status">
+          <div class="site-status-info">
+            <span class="site-status-icon">🌐</span>
+            <span id="current-site-name" class="site-name">example.com</span>
+          </div>
+          <button id="toggle-site-btn" class="site-toggle-btn">
+            <span id="toggle-site-text">Add Site</span>
+          </button>
+        </div>
+
+        <p class="info-text">Click a button to read the current page:</p>
+        <div id="reader-buttons" class="reader-buttons">
+          <!-- Buttons will be dynamically added -->
+        </div>
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p>No readers configured yet</p>
+          <span>Go to Settings to add your reading services</span>
+        </div>
+      </div>
+
+      <!-- Settings Tab -->
+      <div class="tab-content" id="settings-tab">
+        <div class="settings-section">
+          <h3>Your Reader Services</h3>
+          <p class="help-text">Click ✏️ to edit or 🗑️ to delete</p>
+          
+          <div id="services-list" class="services-list">
+            <!-- Services will be dynamically added -->
+          </div>
+
+          <button id="add-service" class="add-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Add Custom Service
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Quick Add Presets</h3>
+          <p class="help-text">One-click add popular reading services</p>
+          <div id="preset-list" class="preset-list">
+            <!-- Presets will be dynamically added -->
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Site Whitelist</h3>
+          
+          <div class="whitelist-mode">
+            <label class="toggle-label">
+              <input type="checkbox" id="whitelist-enabled" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Only show on listed sites</span>
+            </label>
+            <small class="mode-hint" id="whitelist-hint">Add sites below where button should appear</small>
+          </div>
+
+          <div id="allowed-sites-container" class="allowed-sites-container">
+            <div id="allowed-sites-list" class="allowed-sites-list">
+              <!-- Sites will be dynamically added -->
+            </div>
+            <div class="add-site-form">
+              <input type="text" id="new-site-input" placeholder="e.g., medium.com">
+              <button id="add-site-btn" class="add-site-btn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="save-settings" class="save-btn">Save Settings</button>
+      </div>
+    </main>
+
+    <footer>
+      <span>v1.0.0</span>
+    </footer>
+  </div>
+
+  <!-- Add/Edit Service Modal -->
+  <div class="modal" id="service-modal">
+    <div class="modal-content">
+      <h3 id="modal-title">Add Reader Service</h3>
+      <div class="form-group">
+        <label for="service-name">Name</label>
+        <input type="text" id="service-name" placeholder="e.g., Pocket, Instapaper">
+      </div>
+      <div class="form-group">
+        <label for="service-url">URL Pattern</label>
+        <input type="text" id="service-url" placeholder="e.g., https://getpocket.com/save?url={url}">
+        <small>Use <code>{url}</code> where the page URL should go</small>
+      </div>
+      <div class="form-group">
+        <label for="service-color">Button Color</label>
+        <input type="color" id="service-color" value="#6366f1">
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-modal" class="btn-secondary">Cancel</button>
+        <button id="save-service" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+

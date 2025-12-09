@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Icons</title>
+  <style>
+    body { font-family: system-ui; padding: 40px; background: #1a1a2e; color: white; }
+    h1 { margin-bottom: 20px; }
+    .canvas-container { display: flex; gap: 20px; flex-wrap: wrap; margin: 20px 0; }
+    .canvas-item { text-align: center; }
+    canvas { border: 1px solid #333; margin-bottom: 10px; display: block; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; background: #c084fc; color: white; border: none; border-radius: 8px; margin: 10px 5px; }
+    button:hover { background: #a855f7; }
+    .instructions { background: #252532; padding: 20px; border-radius: 12px; margin-top: 30px; }
+    .instructions ol { padding-left: 20px; }
+    .instructions li { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>📖 Read Here - Icon Generator</h1>
+  
+  <div class="canvas-container">
+    <div class="canvas-item">
+      <canvas id="icon16" width="16" height="16"></canvas>
+      <div>16x16</div>
+    </div>
+    <div class="canvas-item">
+      <canvas id="icon32" width="32" height="32"></canvas>
+      <div>32x32</div>
+    </div>
+    <div class="canvas-item">
+      <canvas id="icon48" width="48" height="48"></canvas>
+      <div>48x48</div>
+    </div>
+    <div class="canvas-item">
+      <canvas id="icon128" width="128" height="128"></canvas>
+      <div>128x128</div>
+    </div>
+  </div>
+
+  <button onclick="downloadAll()">Download All Icons</button>
+
+  <div class="instructions">
+    <h3>Instructions:</h3>
+    <ol>
+      <li>Open this file in Chrome browser</li>
+      <li>Click "Download All Icons" button</li>
+      <li>Save all 4 PNG files to the <code>icons</code> folder</li>
+      <li>Delete this HTML file after generating icons</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [16, 32, 48, 128];
+
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const scale = size / 128;
+
+      // Background - gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#c084fc');
+      gradient.addColorStop(1, '#a855f7');
+      
+      // Rounded rectangle background
+      const radius = size * 0.2;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Draw book icon
+      ctx.strokeStyle = 'white';
+      ctx.fillStyle = 'white';
+      ctx.lineWidth = Math.max(1.5, size * 0.06);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const cx = size / 2;
+      const padding = size * 0.2;
+      const bookTop = padding;
+      const bookBottom = size - padding;
+      const bookLeft = padding;
+      const bookRight = size - padding;
+      const bookHeight = bookBottom - bookTop;
+
+      // Left page
+      ctx.beginPath();
+      ctx.moveTo(cx, bookTop + bookHeight * 0.1);
+      ctx.bezierCurveTo(
+        cx - size * 0.15, bookTop,
+        bookLeft + size * 0.1, bookTop,
+        bookLeft, bookTop + bookHeight * 0.1
+      );
+      ctx.lineTo(bookLeft, bookBottom - bookHeight * 0.1);
+      ctx.bezierCurveTo(
+        bookLeft + size * 0.1, bookBottom,
+        cx - size * 0.15, bookBottom,
+        cx, bookBottom - bookHeight * 0.1
+      );
+      ctx.stroke();
+
+      // Right page
+      ctx.beginPath();
+      ctx.moveTo(cx, bookTop + bookHeight * 0.1);
+      ctx.bezierCurveTo(
+        cx + size * 0.15, bookTop,
+        bookRight - size * 0.1, bookTop,
+        bookRight, bookTop + bookHeight * 0.1
+      );
+      ctx.lineTo(bookRight, bookBottom - bookHeight * 0.1);
+      ctx.bezierCurveTo(
+        bookRight - size * 0.1, bookBottom,
+        cx + size * 0.15, bookBottom,
+        cx, bookBottom - bookHeight * 0.1
+      );
+      ctx.stroke();
+
+      // Center spine
+      ctx.beginPath();
+      ctx.moveTo(cx, bookTop + bookHeight * 0.1);
+      ctx.lineTo(cx, bookBottom - bookHeight * 0.1);
+      ctx.stroke();
+    }
+
+    // Draw all icons
+    sizes.forEach(size => {
+      const canvas = document.getElementById(`icon${size}`);
+      drawIcon(canvas, size);
+    });
+
+    function downloadIcon(size) {
+      const canvas = document.getElementById(`icon${size}`);
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function downloadAll() {
+      sizes.forEach((size, i) => {
+        setTimeout(() => downloadIcon(size), i * 300);
+      });
+    }
+  </script>
+</body>
+</html>
+

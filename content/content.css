@@ -1,0 +1,234 @@
+/* Read Here - Floating Widget Styles */
+
+#read-here-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Larger hover zone around the widget */
+  padding: 12px;
+  margin: -12px;
+}
+
+/* Main floating button */
+#read-here-widget .rh-main-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 
+    0 4px 12px rgba(168, 85, 247, 0.4),
+    0 0 0 0 rgba(168, 85, 247, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+}
+
+#read-here-widget .rh-main-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 
+    0 6px 20px rgba(168, 85, 247, 0.5),
+    0 0 0 4px rgba(168, 85, 247, 0.2);
+}
+
+/* Change button style when menu is shown */
+#read-here-widget.rh-show .rh-main-btn {
+  transform: scale(1.1);
+  box-shadow: 
+    0 6px 20px rgba(168, 85, 247, 0.5),
+    0 0 0 4px rgba(168, 85, 247, 0.2);
+}
+
+/* Menu popup */
+#read-here-widget .rh-menu {
+  position: absolute;
+  bottom: 52px;
+  right: 0;
+  min-width: 200px;
+  background: #16161d;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.95);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Invisible connector between button and menu */
+#read-here-widget .rh-menu::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 0;
+  width: 60px;
+  height: 12px;
+}
+
+/* Show menu when widget has 'show' class (controlled by JS) */
+#read-here-widget.rh-show .rh-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Menu header */
+#read-here-widget .rh-menu-header {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #71717a;
+  background: #1e1e28;
+  border-bottom: 1px solid #27272a;
+}
+
+/* Menu items container */
+#read-here-widget .rh-menu-items {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Individual menu item */
+#read-here-widget .rh-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f4f4f5;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+#read-here-widget .rh-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--item-color, #c084fc);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+#read-here-widget .rh-menu-item:hover {
+  background: #252532;
+}
+
+#read-here-widget .rh-menu-item:hover::before {
+  opacity: 1;
+}
+
+#read-here-widget .rh-item-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--item-color, #c084fc);
+  border-radius: 6px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+#read-here-widget .rh-item-name {
+  flex: 1;
+  white-space: nowrap;
+}
+
+#read-here-widget .rh-item-arrow {
+  color: #71717a;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+#read-here-widget .rh-menu-item:hover .rh-item-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--item-color, #c084fc);
+}
+
+/* Animation for initial appearance */
+@keyframes rh-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+#read-here-widget .rh-main-btn {
+  animation: rh-bounce-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Subtle glow on idle */
+@keyframes rh-glow {
+  0%, 100% {
+    box-shadow: 
+      0 4px 12px rgba(168, 85, 247, 0.4),
+      0 0 0 0 rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 4px 16px rgba(168, 85, 247, 0.5),
+      0 0 0 2px rgba(168, 85, 247, 0.1);
+  }
+}
+
+#read-here-widget:not(.rh-show) .rh-main-btn {
+  animation: rh-glow 3s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  #read-here-widget {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  #read-here-widget .rh-main-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  #read-here-widget .rh-menu {
+    min-width: 180px;
+    bottom: 50px;
+  }
+}
+
+/* Print styles - hide widget when printing */
+@media print {
+  #read-here-widget {
+    display: none !important;
+  }
+}
+
