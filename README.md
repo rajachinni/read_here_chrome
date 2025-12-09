@@ -1,112 +1,136 @@
 # 📖 Read Here - Chrome Extension
 
-A Chrome extension that lets you quickly redirect articles to your favorite reading services with a single click.
+A Chrome extension that lets you quickly redirect articles to your favorite reading services. Perfect for bypassing paywalls, saving articles for later, or getting a clean reading experience.
 
-![Read Here Preview](preview.png)
+## ✨ Features
 
-## Features
-
-- 🎯 **Floating Button**: A beautiful floating "Read Here" button appears on every webpage
-- ⚙️ **Configurable Services**: Add your favorite reading services (Pocket, Instapaper, Reader View, etc.)
-- 🎨 **Customizable**: Set custom colors for each service button
+### Core Features
+- 🎯 **Floating Button**: Hover to reveal reader options on any webpage
+- 🔓 **Paywall Bypass**: Built-in support for Freedium, 12ft Ladder, and more
+- ⚙️ **Fully Configurable**: Add, edit, or remove reader services
+- 🎨 **Customizable Colors**: Set custom colors for each service button
 - 📱 **Draggable Widget**: Move the floating button anywhere on the page
-- 🖱️ **Right-Click Menu**: Access reading services from the context menu
-- 💾 **Synced Settings**: Your settings sync across all Chrome browsers
 
-## Installation
+### Site Whitelist (NEW!)
+- ✅ **Whitelist Mode**: Only show the button on sites you choose
+- ➕ **Quick Add**: One-click to add current site to whitelist
+- 🌐 **Show Everywhere**: Toggle off whitelist to show on all sites
+
+### Additional Features
+- 🖱️ **Right-Click Menu**: Access reader services from context menu
+- 💾 **Synced Settings**: Settings sync across all Chrome browsers
+- ⚡ **Preset Services**: One-click add popular reading services
+
+## 🚀 Installation
 
 ### Step 1: Generate Icons
+1. Open `icons/generate-icons.html` in Chrome
+2. Click **"Download All Icons"**
+3. Save all 4 PNG files to the `icons` folder
 
-1. Open `/icons/generate-icons.html` in Chrome
-2. Click "Download All Icons"
-3. Save all 4 PNG files (`icon16.png`, `icon32.png`, `icon48.png`, `icon128.png`) to the `icons` folder
-
-### Step 2: Load Extension in Chrome
-
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in the top right)
+### Step 2: Load in Chrome
+1. Go to `chrome://extensions/`
+2. Enable **Developer mode** (top right toggle)
 3. Click **Load unpacked**
 4. Select the `readExtension` folder
-5. The extension should now appear in your toolbar!
 
-## Usage
+## 📖 Usage
+
+### Floating Button (Hover Menu)
+1. **Hover** over the purple 📖 button (bottom-right corner)
+2. Menu appears with your configured services
+3. **Click** a service to open current article in that reader
+4. **Drag** the button to reposition it
 
 ### Quick Read (Popup)
-1. Click the extension icon in your toolbar
-2. Click any service button to open the current page in that reader
-
-### Floating Button
-1. Look for the purple floating button in the bottom-right corner of any webpage
-2. Click it to expand the menu
-3. Choose a reading service to redirect the current article
-4. Drag the button to reposition it anywhere on the page
+1. Click the extension icon in toolbar
+2. See current site status (whitelisted or not)
+3. Click any service button to open article
 
 ### Right-Click Menu
-1. Right-click anywhere on a page (or on a link)
-2. Select "Read Here" → Choose your reading service
+1. Right-click anywhere on page (or on a link)
+2. Select **"Read Here"** → Choose service
 
-### Configure Services
+## ⚙️ Configuration
 
-1. Click the extension icon
-2. Go to the **Settings** tab
-3. Click **Add New Service** to add a custom reader
-4. Enter:
-   - **Name**: Display name for the service
-   - **URL Pattern**: The service URL with `{url}` placeholder
+### Site Whitelist
+
+Control where the floating button appears:
+
+| Setting | Behavior |
+|---------|----------|
+| ✅ **Whitelist ON** + No sites | Button shows **nowhere** |
+| ✅ **Whitelist ON** + Sites added | Button shows **only on those sites** |
+| ⬜ **Whitelist OFF** | Button shows **everywhere** |
+
+**To configure:**
+1. Click extension icon → **Settings** tab
+2. Toggle **"Only show on listed sites"**
+3. Add sites using the input field (e.g., `medium.com`)
+
+### Reader Services
+
+**Add from Presets (Easy):**
+1. Go to **Settings** → **Quick Add Presets**
+2. Click any service button to add it
+
+**Add Custom Service:**
+1. Go to **Settings** → Click **"Add Custom Service"**
+2. Enter:
+   - **Name**: Display name (e.g., "My Reader")
+   - **URL Pattern**: Service URL with `{url}` placeholder
    - **Color**: Button color
-5. Click **Save Settings**
+3. Click **Save**
 
-## Pre-configured Services
+## 📋 Available Presets
 
 | Service | Description | URL Pattern |
 |---------|-------------|-------------|
-| Pocket | Save for later | `https://getpocket.com/save?url={url}` |
-| Instapaper | Read it later | `https://www.instapaper.com/hello2?url={url}` |
-| Reader View | Jina AI Reader | `https://r.jina.ai/{url}` |
+| 🔓 Freedium | Bypass Medium paywalls | `https://freedium.cfd/{url}` |
+| 📥 Pocket | Save for later | `https://getpocket.com/save?url={url}` |
+| 📄 Instapaper | Read it later | `https://www.instapaper.com/hello2?url={url}` |
+| 📖 Jina Reader | Clean reader view | `https://r.jina.ai/{url}` |
+| 🪜 12ft Ladder | Bypass paywalls | `https://12ft.io/{url}` |
+| 📦 Archive.today | Archive pages | `https://archive.today/?run=1&url={url}` |
+| 📑 Outline | Clean article view | `https://outline.com/{url}` |
+| 💡 Readwise | Save to Readwise | `https://readwise.io/save?url={url}` |
 
-## Adding Custom Services
-
-Here are some popular services you can add:
+## 🔧 Custom Service Examples
 
 ```
-# Readwise Reader
-https://readwise.io/reader/save?url={url}
-
 # Omnivore
 https://omnivore.app/api/save?url={url}
 
 # Wallabag (self-hosted)
 https://your-wallabag.com/bookmarklet?url={url}
 
-# Firefox Reader Mode (via service)
-about:reader?url={url}
+# Web Archive
+https://web.archive.org/save/{url}
 
-# 12ft Ladder (bypass paywalls)
-https://12ft.io/{url}
-
-# Archive.today
-https://archive.today/?run=1&url={url}
-
-# Outline
-https://outline.com/{url}
+# Google Cache
+https://webcache.googleusercontent.com/search?q=cache:{url}
 ```
 
-## File Structure
+**Note:** Use `{url}` where the article URL should be inserted.
+- Services with `?url=` get encoded URLs
+- Services with `/{url}` get raw URLs (like Freedium)
+
+## 📁 File Structure
 
 ```
 readExtension/
 ├── manifest.json          # Extension configuration
 ├── background/
-│   └── background.js      # Service worker
+│   └── background.js      # Service worker & context menus
 ├── content/
 │   ├── content.js         # Floating button logic
 │   └── content.css        # Floating button styles
 ├── popup/
 │   ├── popup.html         # Popup UI
-│   ├── popup.css          # Popup styles
-│   └── popup.js           # Popup logic
+│   ├── popup.css          # Popup styles (dark theme)
+│   └── popup.js           # Settings & service management
 ├── icons/
-│   ├── generate-icons.html # Icon generator
+│   ├── generate-icons.html # Icon generator tool
 │   ├── icon16.png
 │   ├── icon32.png
 │   ├── icon48.png
@@ -114,28 +138,41 @@ readExtension/
 └── README.md
 ```
 
-## Development
+## 🛠️ Development
 
 ### Making Changes
-
-1. Edit the source files
+1. Edit source files
 2. Go to `chrome://extensions/`
-3. Click the refresh icon on the Read Here extension card
-4. Test your changes
+3. Click **refresh** ↻ on Read Here
+4. Refresh the webpage you're testing
 
 ### Debugging
+- **Popup**: Right-click extension icon → "Inspect popup"
+- **Content Script**: DevTools → Console (on any page)
+- **Background**: `chrome://extensions/` → "Service worker"
 
-- **Popup**: Right-click the extension icon → Inspect popup
-- **Content Script**: Open DevTools on any page → Console
-- **Background**: Go to `chrome://extensions/` → Click "Service worker"
+## 🔒 Permissions
 
-## Permissions Used
+| Permission | Purpose |
+|------------|---------|
+| `storage` | Save settings, sync across browsers |
+| `activeTab` | Get current tab URL |
+| `tabs` | Open articles in new tabs |
+| `contextMenus` | Right-click menu integration |
 
-- `storage`: Save your settings and sync across browsers
-- `activeTab`: Access the current tab's URL
-- `tabs`: Create new tabs for reader services
+## 📦 Publishing
 
-## License
+### Chrome Web Store ($5 one-time fee)
+1. Zip the extension folder
+2. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+3. Upload and publish
+
+### Free Alternatives
+- **Microsoft Edge Add-ons** - Free, same extension format
+- **Firefox Add-ons** - Free, minor modifications needed
+- **GitHub Releases** - Users install manually
+
+## 📄 License
 
 MIT License - Feel free to modify and distribute!
 
@@ -143,3 +180,4 @@ MIT License - Feel free to modify and distribute!
 
 Made with ❤️ for better reading experiences
 
+**Quick Start:** Add `medium.com` to whitelist → Hover the 📖 button → Click Freedium → Enjoy paywall-free reading! 🎉
