@@ -23,16 +23,25 @@ A Chrome extension that lets you quickly redirect articles to your favorite read
 
 ## 🚀 Installation
 
-### Step 1: Generate Icons
-1. Open `icons/generate-icons.html` in Chrome
-2. Click **"Download All Icons"**
-3. Save all 4 PNG files to the `icons` folder
+### Step 1: Download the Code
+
+```bash
+# Option A: Clone with Git
+git clone https://github.com/YOUR_USERNAME/read-here-extension.git
+
+# Option B: Download ZIP
+# Click green "Code" button → "Download ZIP" → Extract
+```
 
 ### Step 2: Load in Chrome
-1. Go to `chrome://extensions/`
-2. Enable **Developer mode** (top right toggle)
-3. Click **Load unpacked**
+
+1. Open Chrome and go to `chrome://extensions/`
+2. Enable **Developer mode** (toggle in top right corner)
+3. Click **"Load unpacked"**
 4. Select the `readExtension` folder
+5. Done! 🎉
+
+The extension icon will appear in your toolbar. Click the puzzle icon 🧩 to pin it.
 
 ## 📖 Usage
 
@@ -130,13 +139,30 @@ readExtension/
 │   ├── popup.css          # Popup styles (dark theme)
 │   └── popup.js           # Settings & service management
 ├── icons/
-│   ├── generate-icons.html # Icon generator tool
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
+│   ├── icon16.png         # Toolbar icon
+│   ├── icon32.png         # Extension icon
+│   ├── icon48.png         # Extension management icon
+│   └── icon128.png        # Chrome Web Store icon
 └── README.md
 ```
+
+## ❓ Troubleshooting
+
+### Extension not showing in toolbar?
+1. Make sure **Developer mode** is enabled in `chrome://extensions/`
+2. Check if the extension is enabled (toggle should be ON)
+3. Click the puzzle icon 🧩 in toolbar → Pin "Read Here"
+
+### Floating button not appearing?
+1. Open extension popup → **Settings**
+2. Check if **"Only show on listed sites"** is ON
+3. If ON, add the current site to the whitelist
+4. Refresh the webpage
+
+### Changes not taking effect?
+1. Go to `chrome://extensions/`
+2. Click the **refresh** ↻ icon on Read Here
+3. Refresh the webpage you're testing
 
 ## 🛠️ Development
 
