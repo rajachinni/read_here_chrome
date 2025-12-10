@@ -82,17 +82,27 @@ let editingServiceId = null;
 let allowedSites = [];
 let whitelistEnabled = true; // Default: ON (only show on listed sites)
 let currentSiteHostname = '';
+let currentPageUrl = '';
+let currentPageTitle = '';
+
+// Bookmark related
+let lists = []; // Array of { id, name, icon, bookmarks: [] }
+let listIds = []; // Store list folder IDs
+let selectedListIcon = '📚';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await getCurrentSite();
+  await initBookmarks();
   setupEventListeners();
   renderQuickReadButtons();
   renderServicesList();
   renderPresetList();
   renderAllowedSites();
   updateSiteStatus();
+  renderQuickSaveLists();
+  renderSavedLists();
 });
 
 // Load settings from storage
@@ -111,12 +121,18 @@ async function loadSettings() {
 async function getCurrentSite() {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs[0] && tabs[0].url) {
-      const url = new URL(tabs[0].url);
-      currentSiteHostname = url.hostname.replace(/^www\./, '');
+    if (tabs[0]) {
+      if (tabs[0].url) {
+        const url = new URL(tabs[0].url);
+        currentSiteHostname = url.hostname.replace(/^www\./, '');
+        currentPageUrl = tabs[0].url;
+      }
+      currentPageTitle = tabs[0].title || 'Untitled';
     }
   } catch (e) {
     currentSiteHostname = '';
+    currentPageUrl = '';
+    currentPageTitle = '';
   }
 }
 
@@ -215,6 +231,49 @@ function setupEventListeners() {
   document.getElementById('new-site-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       addSiteFromInput();
+    }
+  });
+
+  // ============ LIST MODAL EVENTS ============
+  
+  // Create list button
+  document.getElementById('create-list-btn').addEventListener('click', () => {
+    document.getElementById('list-name').value = '';
+    selectedListIcon = '📚';
+    document.querySelectorAll('.icon-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.icon === '📚');
+    });
+    document.getElementById('list-modal').classList.add('active');
+  });
+
+  // Icon picker
+  document.querySelectorAll('.icon-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedListIcon = btn.dataset.icon;
+    });
+  });
+
+  // Cancel list modal
+  document.getElementById('cancel-list-modal').addEventListener('click', () => {
+    document.getElementById('list-modal').classList.remove('active');
+  });
+
+  // Save list
+  document.getElementById('save-list').addEventListener('click', createNewList);
+
+  // Close list modal on backdrop click
+  document.getElementById('list-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'list-modal') {
+      document.getElementById('list-modal').classList.remove('active');
+    }
+  });
+
+  // Enter key to create list
+  document.getElementById('list-name').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      createNewList();
     }
   });
 }
@@ -339,14 +398,7 @@ async function deleteService(id) {
   renderPresetList();
   
   // Notify content scripts
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tabs[0]) {
-    chrome.tabs.sendMessage(tabs[0].id, { 
-      type: 'settingsUpdated',
-      showFloatingBtn: document.getElementById('show-floating-btn').checked,
-      services 
-    }).catch(() => {});
-  }
+  notifyContentScript();
   
   showToast(`${serviceName} deleted!`);
 }
@@ -464,14 +516,7 @@ async function addPreset(presetId) {
   renderPresetList();
   
   // Notify content scripts
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tabs[0]) {
-    chrome.tabs.sendMessage(tabs[0].id, { 
-      type: 'settingsUpdated',
-      showFloatingBtn: document.getElementById('show-floating-btn').checked,
-      services 
-    }).catch(() => {});
-  }
+  notifyContentScript();
   
   showToast(`${preset.name} added!`);
 }
@@ -648,8 +693,322 @@ async function notifyContentScript() {
       type: 'settingsUpdated',
       whitelistEnabled,
       allowedSites,
-      services 
+      services,
+      lists
     }).catch(() => {});
   }
+}
+
+// ============ BOOKMARK/LIST FUNCTIONS ============
+
+// Initialize bookmarks - load list IDs from storage
+async function initBookmarks() {
+  // Check if bookmarks API is available
+  if (!chrome.bookmarks) {
+    console.log('Read Here: Bookmarks API not available');
+    return;
+  }
+  
+  try {
+    // Load list IDs from storage
+    const result = await chrome.storage.sync.get(['listIds']);
+    listIds = result.listIds || [];
+    
+    // Load all lists
+    await loadLists();
+  } catch (e) {
+    console.error('Read Here: Error initializing bookmarks', e);
+  }
+}
+
+// Load all lists from bookmarks using stored IDs
+async function loadLists() {
+  if (!chrome.bookmarks) return;
+  
+  lists = [];
+  const validIds = [];
+  
+  for (const listId of listIds) {
+    try {
+      const folderArr = await chrome.bookmarks.get(listId);
+      if (folderArr && folderArr[0] && folderArr[0].url === undefined) {
+        const folder = folderArr[0];
+        const bookmarks = await chrome.bookmarks.getChildren(folder.id);
+        const iconMatch = folder.title.match(/^([\p{Emoji}])\s*/u);
+        const icon = iconMatch ? iconMatch[1] : '📚';
+        const name = iconMatch ? folder.title.replace(iconMatch[0], '') : folder.title;
+        
+        lists.push({
+          id: folder.id,
+          name: name,
+          icon: icon,
+          bookmarks: bookmarks.filter(b => b.url)
+        });
+        validIds.push(listId);
+      }
+    } catch (e) {
+      // Folder was deleted, skip it
+      console.log('Read Here: List folder not found, skipping:', listId);
+    }
+  }
+  
+  // Update storage if some IDs were invalid
+  if (validIds.length !== listIds.length) {
+    listIds = validIds;
+    await chrome.storage.sync.set({ listIds });
+  }
+}
+
+// Create a new list (bookmark folder)
+async function createNewList() {
+  const nameInput = document.getElementById('list-name');
+  const name = nameInput.value.trim();
+  
+  if (!name) {
+    showToast('Please enter a list name');
+    return;
+  }
+  
+  try {
+    // Create folder directly in "Other Bookmarks" (id: "2")
+    const folder = await chrome.bookmarks.create({
+      parentId: '2',
+      title: `${selectedListIcon} ${name}`
+    });
+    
+    // Store the list ID
+    listIds.push(folder.id);
+    await chrome.storage.sync.set({ listIds });
+    
+    lists.push({
+      id: folder.id,
+      name: name,
+      icon: selectedListIcon,
+      bookmarks: []
+    });
+    
+    // Close modal and refresh
+    document.getElementById('list-modal').classList.remove('active');
+    renderSavedLists();
+    renderQuickSaveLists();
+    notifyContentScript();
+    
+    showToast(`List "${name}" created!`);
+  } catch (e) {
+    console.error('Read Here: Error creating list', e);
+    showToast('Error creating list');
+  }
+}
+
+// Save current page to a list
+async function saveToList(listId) {
+  if (!currentPageUrl || !currentPageTitle) {
+    showToast('No page to save');
+    return;
+  }
+  
+  const list = lists.find(l => l.id === listId);
+  if (!list) return;
+  
+  // Check if already saved
+  if (list.bookmarks.some(b => b.url === currentPageUrl)) {
+    showToast(`Already saved to ${list.name}`);
+    return;
+  }
+  
+  try {
+    const bookmark = await chrome.bookmarks.create({
+      parentId: listId,
+      title: currentPageTitle,
+      url: currentPageUrl
+    });
+    
+    list.bookmarks.push(bookmark);
+    renderSavedLists();
+    renderQuickSaveLists();
+    
+    showToast(`Saved to ${list.name}!`);
+  } catch (e) {
+    console.error('Read Here: Error saving bookmark', e);
+    showToast('Error saving');
+  }
+}
+
+// Remove bookmark from list
+async function removeFromList(bookmarkId, listId) {
+  try {
+    await chrome.bookmarks.remove(bookmarkId);
+    
+    const list = lists.find(l => l.id === listId);
+    if (list) {
+      list.bookmarks = list.bookmarks.filter(b => b.id !== bookmarkId);
+    }
+    
+    renderSavedLists();
+    renderQuickSaveLists();
+    showToast('Removed');
+  } catch (e) {
+    console.error('Read Here: Error removing bookmark', e);
+  }
+}
+
+// Delete entire list
+async function deleteList(listId) {
+  const list = lists.find(l => l.id === listId);
+  if (!list) return;
+  
+  if (!confirm(`Delete "${list.name}" and all its bookmarks?`)) return;
+  
+  try {
+    await chrome.bookmarks.removeTree(listId);
+    lists = lists.filter(l => l.id !== listId);
+    
+    // Remove from stored IDs
+    listIds = listIds.filter(id => id !== listId);
+    await chrome.storage.sync.set({ listIds });
+    
+    renderSavedLists();
+    renderQuickSaveLists();
+    notifyContentScript();
+    
+    showToast(`List "${list.name}" deleted`);
+  } catch (e) {
+    console.error('Read Here: Error deleting list', e);
+  }
+}
+
+// Render quick save buttons in Quick Read tab
+function renderQuickSaveLists() {
+  const container = document.getElementById('quick-save-lists');
+  if (!container) return;
+  
+  if (lists.length === 0) {
+    container.innerHTML = `
+      <button class="quick-save-btn" onclick="document.querySelector('[data-tab=saved]').click(); document.getElementById('create-list-btn').click();">
+        <span class="list-icon">➕</span>
+        <span>Create List</span>
+      </button>
+    `;
+    return;
+  }
+  
+  container.innerHTML = lists.map(list => {
+    const isSaved = currentPageUrl && list.bookmarks.some(b => b.url === currentPageUrl);
+    return `
+      <button class="quick-save-btn ${isSaved ? 'saved' : ''}" data-list-id="${list.id}">
+        <span class="list-icon">${list.icon}</span>
+        <span>${list.name}</span>
+        ${isSaved ? '<span>✓</span>' : ''}
+      </button>
+    `;
+  }).join('');
+  
+  // Add click handlers
+  container.querySelectorAll('.quick-save-btn[data-list-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      saveToList(btn.dataset.listId);
+    });
+  });
+}
+
+// Render saved lists in Saved tab
+function renderSavedLists() {
+  const container = document.getElementById('lists-container');
+  const emptyState = document.getElementById('saved-empty');
+  
+  if (!container) return;
+  
+  if (lists.length === 0) {
+    container.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
+  
+  if (emptyState) emptyState.style.display = 'none';
+  
+  container.innerHTML = lists.map(list => `
+    <div class="list-card" data-list-id="${list.id}">
+      <div class="list-card-header">
+        <div class="list-card-info">
+          <span class="list-card-icon">${list.icon}</span>
+          <span class="list-card-name">${list.name}</span>
+          <span class="list-card-count">${list.bookmarks.length}</span>
+        </div>
+        <div class="list-card-actions">
+          <button class="toggle-list" title="Expand/Collapse">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="delete" title="Delete List">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="list-items">
+        ${list.bookmarks.length === 0 ? `
+          <div class="list-empty">No articles saved yet</div>
+        ` : list.bookmarks.map(b => `
+          <div class="list-item" data-bookmark-id="${b.id}">
+            <div class="list-item-info">
+              <div class="list-item-title" title="${b.title}">${b.title}</div>
+              <div class="list-item-url">${new URL(b.url).hostname}</div>
+            </div>
+            <button class="list-item-remove" title="Remove">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  
+  // Add event handlers
+  container.querySelectorAll('.list-card').forEach(card => {
+    const listId = card.dataset.listId;
+    
+    // Toggle expand
+    card.querySelector('.toggle-list').addEventListener('click', (e) => {
+      e.stopPropagation();
+      card.classList.toggle('expanded');
+    });
+    
+    // Click header to expand
+    card.querySelector('.list-card-header').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+    });
+    
+    // Delete list
+    card.querySelector('.delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteList(listId);
+    });
+    
+    // Remove bookmark
+    card.querySelectorAll('.list-item-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const bookmarkId = btn.closest('.list-item').dataset.bookmarkId;
+        removeFromList(bookmarkId, listId);
+      });
+    });
+    
+    // Open bookmark
+    card.querySelectorAll('.list-item-title').forEach(title => {
+      title.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const item = title.closest('.list-item');
+        const list = lists.find(l => l.id === listId);
+        const bookmark = list?.bookmarks.find(b => b.id === item.dataset.bookmarkId);
+        if (bookmark) {
+          chrome.tabs.create({ url: bookmark.url });
+        }
+      });
+    });
+  });
 }
 

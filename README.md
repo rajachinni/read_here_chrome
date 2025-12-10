@@ -11,7 +11,14 @@ A Chrome extension that lets you quickly redirect articles to your favorite read
 - 🎨 **Customizable Colors**: Set custom colors for each service button
 - 📱 **Draggable Widget**: Move the floating button anywhere on the page
 
-### Site Whitelist (NEW!)
+### 📚 Save to Lists (NEW!)
+- 📁 **Custom Lists**: Create lists like "Read Later", "Finance", "Tech"
+- ⚡ **One-Click Save**: Save articles to lists from the floating menu
+- 🔖 **Uses Chrome Bookmarks**: Data survives extension uninstall!
+- 🔄 **Auto Sync**: Lists sync across all your Chrome browsers
+- 📤 **Easy Export**: Use Chrome's bookmark export to backup lists
+
+### Site Whitelist
 - ✅ **Whitelist Mode**: Only show the button on sites you choose
 - ➕ **Quick Add**: One-click to add current site to whitelist
 - 🌐 **Show Everywhere**: Toggle off whitelist to show on all sites
@@ -47,14 +54,32 @@ The extension icon will appear in your toolbar. Click the puzzle icon 🧩 to pi
 
 ### Floating Button (Hover Menu)
 1. **Hover** over the purple 📖 button (bottom-right corner)
-2. Menu appears with your configured services
-3. **Click** a service to open current article in that reader
+2. Menu appears with:
+   - **Reader services** (Freedium, Pocket, etc.)
+   - **Save to List** options (if you have lists)
+3. **Click** a service to open article OR save to a list
 4. **Drag** the button to reposition it
+
+### Save to Lists
+1. Click extension icon → **Saved** tab
+2. Click **➕** to create a new list (e.g., "Read Later")
+3. Choose an icon and name → **Create List**
+4. Now when you hover the floating button, you'll see your lists!
+5. Click a list name to save the current article
+
+**View saved articles:**
+- Go to **Saved** tab → Click a list to expand → Click article to open
+
+**Pro tip:** Your lists are stored as Chrome bookmarks, so they:
+- Sync across devices automatically
+- Can be exported via Chrome's bookmark manager
+- Survive if you uninstall the extension
 
 ### Quick Read (Popup)
 1. Click the extension icon in toolbar
 2. See current site status (whitelisted or not)
 3. Click any service button to open article
+4. Or save directly to a list
 
 ### Right-Click Menu
 1. Right-click anywhere on page (or on a link)
@@ -186,24 +211,3 @@ readExtension/
 | `tabs` | Open articles in new tabs |
 | `contextMenus` | Right-click menu integration |
 
-## 📦 Publishing
-
-### Chrome Web Store ($5 one-time fee)
-1. Zip the extension folder
-2. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
-3. Upload and publish
-
-### Free Alternatives
-- **Microsoft Edge Add-ons** - Free, same extension format
-- **Firefox Add-ons** - Free, minor modifications needed
-- **GitHub Releases** - Users install manually
-
-## 📄 License
-
-MIT License - Feel free to modify and distribute!
-
----
-
-Made with ❤️ for better reading experiences
-
-**Quick Start:** Add `medium.com` to whitelist → Hover the 📖 button → Click Freedium → Enjoy paywall-free reading! 🎉

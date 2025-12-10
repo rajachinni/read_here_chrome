@@ -4,6 +4,7 @@
 let floatingWidget = null;
 let services = [];
 let allowedSites = [];
+let lists = []; // Save lists from bookmarks
 let whitelistEnabled = true; // Default: ON (only show on listed sites)
 let isExpanded = false;
 let hideTimeout = null;
@@ -41,6 +42,7 @@ async function init() {
     if (message.type === 'settingsUpdated') {
       services = message.services || [];
       allowedSites = message.allowedSites || [];
+      lists = message.lists || [];
       whitelistEnabled = message.whitelistEnabled !== false;
       
       if (shouldShowWidget()) {
@@ -53,6 +55,13 @@ async function init() {
         removeFloatingWidget();
       }
     }
+    
+    if (message.type === 'listsUpdated') {
+      lists = message.lists || [];
+      if (floatingWidget) {
+        updateWidgetServices();
+      }
+    }
   });
 }
 
@@ -63,6 +72,14 @@ async function loadSettings() {
     services = result.services || [];
     allowedSites = result.allowedSites || [];
     whitelistEnabled = result.whitelistEnabled !== false;
+    
+    // Load lists from background script
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'getLists' });
+      lists = response?.lists || [];
+    } catch (e) {
+      lists = [];
+    }
   } catch (e) {
     console.log('Read Here: Could not load settings');
   }
@@ -98,7 +115,8 @@ function updateWidgetServices() {
   const menuItems = floatingWidget.querySelector('.rh-menu-items');
   if (!menuItems) return;
 
-  menuItems.innerHTML = services.map(service => `
+  // Reader services
+  let html = services.map(service => `
     <button class="rh-menu-item" data-id="${service.id}" style="--item-color: ${service.color}">
       <span class="rh-item-icon">${service.icon || '📖'}</span>
       <span class="rh-item-name">${service.name}</span>
@@ -108,13 +126,98 @@ function updateWidgetServices() {
     </button>
   `).join('');
 
-  // Add click handlers to menu items
-  menuItems.querySelectorAll('.rh-menu-item').forEach(item => {
+  // Add save to list section
+  html += `<div class="rh-menu-divider"></div>`;
+  html += `<div class="rh-menu-section">Save to List</div>`;
+  
+  if (lists.length > 0) {
+    html += lists.map(list => `
+      <button class="rh-menu-item rh-save-item" data-list-id="${list.id}" style="--item-color: #10b981">
+        <span class="rh-item-icon">${list.icon}</span>
+        <span class="rh-item-name">${list.name}</span>
+        <span class="rh-item-count">${list.bookmarks?.length || 0}</span>
+      </button>
+    `).join('');
+  } else {
+    // Show create list option when no lists exist
+    html += `
+      <button class="rh-menu-item rh-create-list-item" style="--item-color: #8b5cf6">
+        <span class="rh-item-icon">➕</span>
+        <span class="rh-item-name">Create a List</span>
+      </button>
+    `;
+  }
+
+  menuItems.innerHTML = html;
+
+  // Add click handlers to reader items
+  menuItems.querySelectorAll('.rh-menu-item:not(.rh-save-item):not(.rh-create-list-item)').forEach(item => {
     item.addEventListener('click', (e) => {
       e.stopPropagation();
       openInReader(item.dataset.id);
     });
   });
+
+  // Add click handlers to save items
+  menuItems.querySelectorAll('.rh-save-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      saveToList(item.dataset.listId);
+    });
+  });
+
+  // Add click handler to create list item
+  const createListItem = menuItems.querySelector('.rh-create-list-item');
+  if (createListItem) {
+    createListItem.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await createListFromMenu();
+    });
+  }
+}
+
+// Create a new list directly from the floating menu
+async function createListFromMenu() {
+  // Hide menu first
+  if (floatingWidget) {
+    floatingWidget.classList.remove('rh-show');
+  }
+  
+  // Prompt for list name
+  const listName = prompt('Enter list name:', 'Read Later');
+  
+  if (!listName || !listName.trim()) {
+    return;
+  }
+  
+  try {
+    // Check if extension context is still valid
+    if (!chrome.runtime?.id) {
+      showSaveToast('Please refresh the page');
+      return;
+    }
+    
+    const response = await chrome.runtime.sendMessage({
+      type: 'createList',
+      name: listName.trim(),
+      icon: '📚'
+    });
+    
+    if (response && response.success) {
+      lists = response.lists || [];
+      updateWidgetServices();
+      showSaveToast(`List "${listName}" created!`);
+    } else {
+      showSaveToast(response?.error || 'Error creating list');
+    }
+  } catch (e) {
+    console.error('Read Here: Error creating list', e);
+    if (e.message?.includes('Extension context invalidated')) {
+      showSaveToast('Please refresh the page');
+    } else {
+      showSaveToast('Error creating list');
+    }
+  }
 }
 
 // Setup widget events
@@ -245,6 +348,79 @@ function removeFloatingWidget() {
     floatingWidget = null;
     isExpanded = false;
   }
+}
+
+// Save current page to a list (via background script)
+async function saveToList(listId) {
+  try {
+    // Check if extension context is still valid
+    if (!chrome.runtime?.id) {
+      showSaveToast('Please refresh the page');
+      return;
+    }
+    
+    const response = await chrome.runtime.sendMessage({
+      type: 'saveToList',
+      listId: listId,
+      title: document.title,
+      url: window.location.href
+    });
+    
+    if (response && response.success) {
+      showSaveToast(`Saved to ${response.listName}!`);
+      if (response.lists) {
+        lists = response.lists;
+        updateWidgetServices();
+      }
+    } else {
+      showSaveToast(response?.error || 'Error saving');
+    }
+  } catch (e) {
+    console.error('Read Here: Error saving', e);
+    if (e.message?.includes('Extension context invalidated')) {
+      showSaveToast('Please refresh the page');
+    } else {
+      showSaveToast('Error saving');
+    }
+  }
+  
+  // Close menu
+  if (floatingWidget) {
+    floatingWidget.classList.remove('rh-show');
+  }
+}
+
+// Show toast notification
+function showSaveToast(message) {
+  // Remove existing toast
+  const existing = document.getElementById('rh-toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.id = 'rh-toast';
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 80px;
+    right: 24px;
+    padding: 12px 20px;
+    background: #10b981;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 2147483647;
+    animation: rh-toast-in 0.3s ease;
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'rh-toast-out 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
 }
 
 // Initialize when DOM is ready

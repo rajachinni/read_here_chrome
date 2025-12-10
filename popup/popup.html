@@ -21,6 +21,7 @@
     <main>
       <div class="tabs">
         <button class="tab active" data-tab="quick">Quick Read</button>
+        <button class="tab" data-tab="saved">Saved</button>
         <button class="tab" data-tab="settings">Settings</button>
       </div>
 
@@ -47,6 +48,38 @@
           </svg>
           <p>No readers configured yet</p>
           <span>Go to Settings to add your reading services</span>
+        </div>
+
+        <!-- Save to List Section -->
+        <div class="save-section">
+          <p class="info-text">Save this page to a list:</p>
+          <div id="quick-save-lists" class="quick-save-lists">
+            <!-- Lists will be dynamically added -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved Tab -->
+      <div class="tab-content" id="saved-tab">
+        <div class="saved-header">
+          <h3>Your Reading Lists</h3>
+          <button id="create-list-btn" class="create-list-btn" title="Create new list">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div id="lists-container" class="lists-container">
+          <!-- Lists will be dynamically added -->
+        </div>
+
+        <div class="saved-empty" id="saved-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p>No lists yet</p>
+          <span>Create a list to start saving articles</span>
         </div>
       </div>
 
@@ -104,8 +137,40 @@
     </main>
 
     <footer>
-      <span>v1.0.0</span>
+      <span>v1.1.0</span>
     </footer>
+  </div>
+
+  <!-- Create List Modal -->
+  <div class="modal" id="list-modal">
+    <div class="modal-content">
+      <h3>Create New List</h3>
+      <div class="form-group">
+        <label for="list-name">List Name</label>
+        <input type="text" id="list-name" placeholder="e.g., Read Later, Finance, Tech">
+      </div>
+      <div class="form-group">
+        <label>Choose Icon</label>
+        <div class="icon-picker" id="icon-picker">
+          <button class="icon-option selected" data-icon="📚">📚</button>
+          <button class="icon-option" data-icon="📖">📖</button>
+          <button class="icon-option" data-icon="💰">💰</button>
+          <button class="icon-option" data-icon="💻">💻</button>
+          <button class="icon-option" data-icon="🎯">🎯</button>
+          <button class="icon-option" data-icon="⭐">⭐</button>
+          <button class="icon-option" data-icon="🔖">🔖</button>
+          <button class="icon-option" data-icon="📝">📝</button>
+          <button class="icon-option" data-icon="🎓">🎓</button>
+          <button class="icon-option" data-icon="🏠">🏠</button>
+          <button class="icon-option" data-icon="✈️">✈️</button>
+          <button class="icon-option" data-icon="🍳">🍳</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-list-modal" class="btn-secondary">Cancel</button>
+        <button id="save-list" class="btn-primary">Create List</button>
+      </div>
+    </div>
   </div>
 
   <!-- Add/Edit Service Modal -->

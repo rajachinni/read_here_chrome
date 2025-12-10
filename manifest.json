@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Read Here",
-  "version": "1.0.0",
-  "description": "Quickly redirect articles to your favorite reading services",
+  "version": "1.1.0",
+  "description": "Redirect articles to reader services & save to custom lists",
   "permissions": [
     "storage",
     "activeTab",
     "tabs",
-    "contextMenus"
+    "contextMenus",
+    "bookmarks"
   ],
   "action": {
     "default_popup": "popup/popup.html",

@@ -232,3 +232,52 @@
   }
 }
 
+/* Menu divider and section */
+#read-here-widget .rh-menu-divider {
+  height: 1px;
+  background: #27272a;
+  margin: 8px 0;
+}
+
+#read-here-widget .rh-menu-section {
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #71717a;
+}
+
+/* Save item count badge */
+#read-here-widget .rh-item-count {
+  font-size: 10px;
+  color: #71717a;
+  background: #1e1e28;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+/* Toast animations */
+@keyframes rh-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rh-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
